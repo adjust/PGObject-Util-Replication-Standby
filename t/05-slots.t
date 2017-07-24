@@ -1,5 +1,5 @@
 use PGObject::Util::Replication::Standby;
-use Test::Mpre;
+use Test::More;
 
 plan skip_all 'DB_TESTING not set' unless $ENV{DB_TESTING};
 plan tests => 21;
