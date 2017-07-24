@@ -121,12 +121,12 @@ sub _build_recoveryconf {
 
 =cut
 
-has upstream_host => ();
-has upstream_port => (default => 5432);
-has upstream_user => ();
-has upstream_password => ();
-has upstream_database => ( default => 'postgres');
-has standby_name => ();
+has upstream_host => (is => 'rw', );
+has upstream_port => (is => 'rw', default => 5432);
+has upstream_user => (is => 'rw', );
+has upstream_password => (is => 'rw', );
+has upstream_database => (is => 'rw',  default => 'postgres');
+has standby_name => (is => 'rw', );
 
 =head1 METHODS
 
@@ -287,7 +287,7 @@ Provides a generic SMO for the immediate upstream server.
 Traverses upstream until it finds a server which is not recovering and returns a Master SMO for
 that server.
 
-=head2 Promotion
+=head2 Promotion (Forthcoming)
 
 Promotion can be done in this case if we can touch a trigger file specified in the recovery.conf
 or if we can remove the recovery.conf and restart PostgreSQL.
