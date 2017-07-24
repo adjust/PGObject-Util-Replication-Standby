@@ -3,6 +3,8 @@ package PGObject::Util::Replication::Standby;
 use 5.006;
 use strict;
 use warnings;
+use URI;
+use URI::QueryParam;
 use Moo;
 extends 'PGObject::Util::Replication::SMO';
 
@@ -33,7 +35,7 @@ our $VERSION = '0.01';
     $replica->credentials('foo', 'superdupersecret');
 
     # finally get the recovery.conf contents
-    $replica->recoveryconf->filecontents();
+    $replica->recoveryconf_contents();
 
     ### manage replication slots
     # clearing all slots, for example failing over
@@ -92,11 +94,19 @@ The config manager for the PostgreSQL
 
 =cut 
 
-has recoveryconf => (is => lazy);
+has recoveryconf => (is => 'lazy');
+
+my $recovery_vars = [qw(
+   recovery_command archive_cleanup_command recovery_end_command
+   recovery_target recovery_target_name recovery_target_time recovery_target_xid
+   recovery_target_inclusive recovery_target_timeline recovery_target_action
+   standby_mode primary_conninfo primary_slot_name trigger_file 
+   recovery_min_apply_delay
+)];
 
 sub _build_recoveryconf {
     my ($self) = @_;
-    return PGObject::Util::PGConfig->new();
+    return PGObject::Util::PGConfig->new( $recovery_vars );
 }
 
 =head2 upstream_host
@@ -111,11 +121,12 @@ sub _build_recoveryconf {
 
 =cut
 
-has upstream_host;
-has upstream_port;
-has upstream_user;
-has upstream_password;
-has standby_name;
+has upstream_host => ();
+has upstream_port => (default => 5432);
+has upstream_user => ();
+has upstream_password => ();
+has upstream_database => ( default => 'postgres');
+has standby_name => ();
 
 =head1 METHODS
 
@@ -138,11 +149,105 @@ sub set_recovery_param {
 
 =head3 connection_string
 
+=head3 connection_string($cstring)
+
 Generates the connection string from the current attributes for the SMO.
+
+We accept reading aboth formats (key/value and URI).  We always write URIs.
+
+This function in either form has the side effect of updating the 
+primary_connstring field in the recoveryconf property.
+
+=cut
+
+sub connection_string {
+    my ($self, $cstring) = @_;
+    return _set_connection_string(@_) if $cstring;
+    my $uri = URI->new($self->upstream_host, 'postgresql');
+    $uri->user($self->upstream_user) if $self->upstream_user;
+    $uri->path($self->upstream_database);
+    $uri->password($self->upstream_password) if $self->upstream_password;
+    $uri->query_form({application_name => $self->standby_name});
+
+    $self->recoveryconf->set_value('primary_connstring', $uri->as_string);
+    return $uri->as_string;
+}
+
+sub _set_connection_string {
+    my ($self, $cstring);
+    if ($cstring =~ m#^postgresql://#){
+        my $uri = URI->new($cstring);
+        $self->upstream_user($uri->user);
+        $self->upstream_password($uri->password);
+        $self->upstream_databaser($uri->path);
+        $self->upstream_host($uri->host);
+        $self->upstream_port($uri->port);
+        $self->standby_name($uri->query_param('application_name'))
+              if uri->query_param('application_name');
+    } else { # key/value format
+        my %args;
+        while ($cstring) {
+             $cstring =~ s/^([^=])=\s*//;
+             my $key = $1;
+             my $value;
+             if ($cstring =~ /^'/){
+                $cstring =~ s/'((?:[^']|'')+)'\s+//;
+                $value = $1;
+             } else {
+                $cstring =~ s/(\S+)\s+//;
+                $value = $1;
+             }
+        }
+        self->upstream_host($args{host}) if $args{host};
+        self->upstream_port($args{port}) if $args{port};
+        self->upstream_user($args{user}) if $args{user};
+        self->upstream_password($args{password}) if $args{password};
+        self->upstream_database($args{dbname}) if $args{dbname};
+        self->standby_name($args{application_name}) if $args{application_name};
+    }
+    return $self->connection_string;
+}
+
 
 =head3 from_recoveryconf($path)
 
 Sets all appropriate parameters from a given recovery.conf at a valid path.
+
+This weill normalize the connection string in URL format.
+
+=cut
+
+sub from_recoveryconf {
+    my ($self, $path) = @_;
+    $self->recoveryconf->from_file($path);
+    $self->connecton_string($self->recoveryconf->get('primary_conninfo'));
+}
+
+=head3 recoveryconf_contents
+
+Returns the contents of the recovery.conf to be used.
+
+=cut
+
+sub recoveryconf_contents {
+    my ($self) = @_;
+    $self->connection_string;
+    return $self->recoveryconf->filecontents;
+}
+
+=head3 credentials($user, $pass)
+
+Sets the username and password.
+
+=cut
+
+sub credentials {
+    my ($self, $user, $pass) = @_;
+    $self->upstream_user($user);
+    $self->upstream_password($pass);
+    $self->connection_string;
+    return;
+}
 
 =head2 WAL telemetry
 
@@ -155,6 +260,21 @@ situation so you can ensure that the most recent replica is failed over to.
 
 This can also be used to check WAL telemetry against that on the master to see if there are 
 slow links regarding non-synchronous standby servers and the like.
+
+=head3 lag_bytes_from($lsn)
+
+Returns the number of bytes passed on the recovery connection between the 
+log series number (lsn) and the current recovery position.
+
+=cut
+
+sub lag_bytes_from {
+    my ($self, $lsn) = $_;
+    my $dbh = $self->connect;
+    my $sth = $dbh->prepare("SELECT ?::pg_lsn - pg_last_xlog_receive_location()");
+    $sth->execute($lsn);
+    return ($sth->fetchrow_array)[0];
+}
 
 =head2 Upstream traversal
 
@@ -172,8 +292,35 @@ that server.
 Promotion can be done in this case if we can touch a trigger file specified in the recovery.conf
 or if we can remove the recovery.conf and restart PostgreSQL.
 
+=head3 promote($method)
+
+Promotes a slave to master.  First tries the trigger file if available.
+Otherwise tries to rename the recovery.conf and restart.  Methods tried are:
+
+=over
+
+=item ctlcluster: pg_ctlcluster 
+
+available on Debian and Ubuntu systems
+
+=item sysv: service postgresql restart
+
+where sysv init scripts are used.
+
+=item systemd: systemctl restart postgresql
+
+where systemd is used.
+
+=back
+
+If no method is provided we search through the methods in
+unspecified order.
+
 =cut
 
+sub promote {
+    my ($self, $method) = @_;
+}
 
 =head1 AUTHOR
 
