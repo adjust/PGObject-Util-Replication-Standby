@@ -1,7 +1,7 @@
 use PGObject::Util::Replication::Standby;
 use Test::More;
 
-plan skip_all 'DB_TESTING not set' unless $ENV{DB_TESTING};
+plan skip_all => 'DB_TESTING not set' unless $ENV{DB_TESTING};
 plan tests => 21;
 
 my $standby = PGObject::Util::Replication::Standby->new(port => 5433, host => 'localhost');
