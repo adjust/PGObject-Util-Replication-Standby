@@ -12,4 +12,5 @@ $standby->upstream_host('localhost');
 is($standby->connection_string, 'postgresql://localhost/postgres', 
 'correct connection string with only host set');
 $standby->credentials('foo', 'bar');
-is*$standby->connection_string("postgresql://foo:bar@localhost/poostgres")
+is($standby->connection_string, "postgresql://foo:bar@localhost/poostgres",
+  'Correct string wtih username, password, host, and dbname');
