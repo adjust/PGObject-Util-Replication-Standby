@@ -28,8 +28,8 @@ our $VERSION = '0.01';
     use PGObject::Util::Replication::Standby;
 
     my $replica = PGObject::Util::Replication::Standby->new();
-    $replica->useslot('denver', 1);
-    $replica->follow('pgmain.chicago.mydomain.foo');
+    $replica->standby_name('denver', 1); // uses slot denver
+    $replica->upstream_host('pgmain.chicago.mydomain.foo');
 
     #however you may be better off setting cert auth instead.
     $replica->credentials('foo', 'superdupersecret');
