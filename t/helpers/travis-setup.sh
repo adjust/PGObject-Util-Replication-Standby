@@ -15,3 +15,4 @@ sudo service postgresql start $PGVERSION
 echo 'sleeping for 3 sec'
 sleep 3
 sudo ls /var/log/postgresql/
+sudo cat /var/log/postgresql/postgresql-9.6-replica.log
