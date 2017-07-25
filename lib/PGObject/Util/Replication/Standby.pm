@@ -157,7 +157,7 @@ Generates the connection string from the current attributes for the SMO.
 We accept reading aboth formats (key/value and URI).  We always write URIs.
 
 This function in either form has the side effect of updating the 
-primary_connstring field in the recoveryconf property.
+primary_conninfo field in the recoveryconf property.
 
 =cut
 
@@ -173,7 +173,7 @@ sub connection_string {
     $uri->path($self->upstream_database);
     $uri->query_form({application_name => $self->standby_name}) if $self->standby_name;
 
-    $self->recoveryconf->set('primary_connstring', $uri->as_string);
+    $self->recoveryconf->set('primary_conninfo', $uri->as_string);
     return $uri->as_string;
 }
 
@@ -195,17 +195,17 @@ sub _set_connection_string {
         while (length($cstring)) {
              die "failed parsing $cstring" if $old_cstring eq $cstring;
              $old_cstring = $cstring;
-             $cstring =~ s/^([^=])=\s*//;
-             my $key = $1;
+             $cstring =~ s/^([^=]+)=\s*//;
+             my $key = $1 // '';
              my $value;
              if ($cstring =~ /^'/){
-                $cstring =~ s/'((?:[^']|'')+)'\s+//;
+                $cstring =~ s/'((?:[^']|'')*)'\s*//;
                 $value = $1;
              } else {
                 $cstring =~ s/(\S+)\s+//;
                 $value = $1;
              }
-             $args{$key} = $value;
+             $args{$key} = $value if $key;
         }
         $self->upstream_host($args{host});
         $self->upstream_port($args{port});
