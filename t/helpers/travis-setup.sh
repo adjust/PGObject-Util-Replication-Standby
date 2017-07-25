@@ -12,6 +12,7 @@ sudo sh -c "cat t/helpers/config/main.conf >> /etc/postgresql/$PGVERSION/main2/p
 sudo service postgresql start 9.6
 sudo service postgresql restart 9.6
 sudo pg_ctlcluster $PGVERSION main2 start
+sudo -u postgres createuser -s -p 5433 travis &>/dev/null
 
 # create replica
 sudo pg_createcluster $PGVERSION replica # PORT 5434
