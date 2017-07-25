@@ -3,7 +3,7 @@ use Test::More;
 
 plan tests => 5;
 
-my $standby = PGObject::Util::Replication::Standby0>new();
+my $standby = PGObject::Util::Replication::Standby->new();
 ok($standby, 'Got an SMO for the standby');
 ok($standby->recoveryconf, 'Got a config handle for the recovery.conf');
 is($standby->connection_string, 'postgresql://', 
