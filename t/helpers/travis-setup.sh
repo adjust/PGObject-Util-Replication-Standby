@@ -2,11 +2,12 @@
 
 PGVERSION=9.6
 
-psql -c 'ALTER SYSTEM SET max_wal_senders to 5'
-psql -c 'ALTER SYSTEM SET max_replication_slots to 5'
-psql -c 'ALTER SYSTEM SET wal_level to replica'
+sudo service postgresql stop
+sudo pg_dropcluster $PGVERSION main
+sudo pg_createcluster $PGVERSION main
+
 sudo sh -c "cat t/helpers/config/main.conf >> /etc/postgresql/$PGVERSION/main/postgresql.conf"
-sudo service postgresql restart 9.6;
+sudo service postgresql start 9.6
 sudo pg_createcluster $PGVERSION replica
 sudo service postgresql stop
 sudo rm -rf ~postgres/$PGVERSION/replica 
