@@ -177,7 +177,7 @@ sub connection_string {
 }
 
 sub _set_connection_string {
-    my ($self, $cstring);
+    my ($self, $cstring) = @_;
     if ($cstring =~ m#^postgresql://#){
         my $uri = URI->new($cstring);
         $self->upstream_user($uri->user);
@@ -189,7 +189,10 @@ sub _set_connection_string {
               if uri->query_param('application_name');
     } else { # key/value format
         my %args;
-        while ($cstring) {
+        my $old_cstring = 'totally invalid value';
+        while (length($cstring)) {
+             die "failed parsing $cstring" if $old_cstring eq $cstring;
+             $old_cstring = $cstring;
              $cstring =~ s/^([^=])=\s*//;
              my $key = $1;
              my $value;
@@ -200,12 +203,13 @@ sub _set_connection_string {
                 $cstring =~ s/(\S+)\s+//;
                 $value = $1;
              }
+             $args{$key} = $value;
         }
-        self->upstream_host($args{host}) if $args{host};
-        self->upstream_port($args{port}) if $args{port};
-        self->upstream_user($args{user}) if $args{user};
-        self->upstream_password($args{password}) if $args{password};
-        self->upstream_database($args{dbname}) if $args{dbname};
+        self->upstream_host($args{host});
+        self->upstream_port($args{port});
+        self->upstream_user($args{user});
+        self->upstream_password($args{password});
+        self->upstream_database($args{dbname});
         self->standby_name($args{application_name}) if $args{application_name};
     }
     return $self->connection_string;
@@ -222,8 +226,8 @@ This weill normalize the connection string in URL format.
 
 sub from_recoveryconf {
     my ($self, $path) = @_;
-    $self->recoveryconf->from_file($path);
-    $self->connecton_string($self->recoveryconf->get('primary_conninfo'));
+    $self->recoveryconf->fromfile($path);
+    $self->connection_string($self->recoveryconf->get_value('primary_conninfo'));
 }
 
 =head3 recoveryconf_contents
@@ -234,6 +238,7 @@ Returns the contents of the recovery.conf to be used.
 
 sub recoveryconf_contents {
     my ($self) = @_;
+    $self->recoveryconf->set('standby_mode', 1);
     $self->connection_string;
     return $self->recoveryconf->filecontents;
 }
