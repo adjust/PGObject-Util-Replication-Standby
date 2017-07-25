@@ -144,7 +144,7 @@ Sets the parameter for the recovery.conf
 
 sub set_recovery_param {
     my ($self, $name, $value) = @_;
-    $self->recoveryconf->set_value($name, $value);
+    $self->recoveryconf->set($name, $value);
 }
 
 =head3 connection_string
@@ -163,13 +163,16 @@ primary_connstring field in the recoveryconf property.
 sub connection_string {
     my ($self, $cstring) = @_;
     return _set_connection_string(@_) if $cstring;
-    my $uri = URI->new($self->upstream_host, 'postgresql');
-    $uri->user($self->upstream_user) if $self->upstream_user;
+    my $base = "postgresql://";
+    $base .= $self->upstream_host if $self->upstream_host;
+    my $uri = URI->new($base);
+    my $authority = $self->upstream_user;
+    $authority .= ":" . $self->upstream_password if $authority and $self->upstream_password;
+    $uri->authority($authority) if $authority;
     $uri->path($self->upstream_database);
-    $uri->password($self->upstream_password) if $self->upstream_password;
-    $uri->query_form({application_name => $self->standby_name});
+    $uri->query_form({application_name => $self->standby_name}) if $self->standby_name;
 
-    $self->recoveryconf->set_value('primary_connstring', $uri->as_string);
+    $self->recoveryconf->set('primary_connstring', $uri->as_string);
     return $uri->as_string;
 }
 
