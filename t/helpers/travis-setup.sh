@@ -7,14 +7,14 @@ PGVERSION=9.6
 sudo service postgresql stop
 sudo pg_dropcluster   $PGVERSION main
 sudo pg_lsclusters 
-sudo pg_createcluster $PGVERSION main2 -l 5432
+sudo pg_createcluster $PGVERSION main2 # PORT 5433
 sudo sh -c "cat t/helpers/config/main.conf >> /etc/postgresql/$PGVERSION/main2/postgresql.conf"
 sudo service postgresql start 9.6
 sudo service postgresql restart 9.6
 sudo pg_ctlcluster $PGVERSION main2 start
 
 # create replica
-sudo pg_createcluster $PGVERSION replica
+sudo pg_createcluster $PGVERSION replica # PORT 5434
 sudo sh -c "cat t/helpers/config/main.conf >> /etc/postgresql/$PGVERSION/replica/postgresql.conf"
 sudo service postgresql stop
 sudo rm -rf ~postgres/$PGVERSION/replica 

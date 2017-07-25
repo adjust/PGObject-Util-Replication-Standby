@@ -4,7 +4,7 @@ use Test::More;
 plan skip_all => 'DB_TESTING not set' unless $ENV{DB_TESTING};
 plan tests => 21;
 
-my $standby = PGObject::Util::Replication::Standby->new(port => 5433, host => 'localhost');
+my $standby = PGObject::Util::Replication::Standby->new(port => 5434, host => 'localhost');
 
 my @names = qw(pgobject_test_1 pg_object_test_2 test_pg_object1 test_pg_object2);
 
