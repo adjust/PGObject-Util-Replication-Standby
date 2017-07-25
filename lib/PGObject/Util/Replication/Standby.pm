@@ -272,7 +272,7 @@ log series number (lsn) and the current recovery position.
 =cut
 
 sub lag_bytes_from {
-    my ($self, $lsn) = $_;
+    my ($self, $lsn) = @_;
     my $dbh = $self->connect;
     my $sth = $dbh->prepare("SELECT ?::pg_lsn - pg_last_xlog_receive_location()");
     $sth->execute($lsn);
