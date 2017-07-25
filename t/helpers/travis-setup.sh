@@ -24,7 +24,10 @@ sudo sh -c "cat t/helpers/config/replica.conf >> /etc/postgresql/$PGVERSION/repl
 sudo sh -c "echo 'local replication	postgres	trust' >> /etc/postgresql/$PGVERSION/main2/pg_hba.conf"
 sudo pg_ctlcluster $PGVERSION main2 start
 sudo service postgresql start $PGVERSION
+
+#diagnostics and more
 echo 'sleeping for 3 sec'
+sudo pg_lsclusters;
 sleep 3
 sudo ls /var/log/postgresql/
 sudo cat /etc/postgresql/$PGVERSION/main2/postgresql.conf
