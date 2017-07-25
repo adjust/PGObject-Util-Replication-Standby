@@ -3,9 +3,8 @@
 PGVERSION=9.6
 
 
-# Main cluster set to clean slate
+# Main cluster set to clean slate (main2 on 5433)
 sudo service postgresql stop
-sudo pg_dropcluster   $PGVERSION main
 sudo pg_lsclusters 
 sudo pg_createcluster $PGVERSION main2 # PORT 5433
 sudo sh -c "cat t/helpers/config/main.conf >> /etc/postgresql/$PGVERSION/main2/postgresql.conf"
