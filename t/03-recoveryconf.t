@@ -20,7 +20,7 @@ like($standby->recoveryconf_contents, qr/standby_mode/, 'standby_mode set');
 
 $standby = PGObject::Util::Replication::Standby->new();
 $standby->from_recoveryconf('t/helpers/recovery.conf');
-is($standby->connection_string, 'postgresql:///postgres', 
+is($standby->connection_string, 'postgresql://', 
     'empty postgresql connection string by default');
 like($standby->recoveryconf_contents, qr/standby_mode/, 'standby_mode set');
 

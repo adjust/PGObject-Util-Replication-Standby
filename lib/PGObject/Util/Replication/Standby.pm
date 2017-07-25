@@ -179,6 +179,7 @@ sub connection_string {
 
 sub _set_connection_string {
     my ($self, $cstring) = @_;
+    $cstring //= '';
     if ($cstring =~ m#^postgresql://#){
         my $uri = URI->new($cstring);
         $self->upstream_user($uri->user);
@@ -187,7 +188,6 @@ sub _set_connection_string {
         $self->upstream_host($uri->host);
         $self->upstream_port($uri->port);
         $self->standby_name($uri->query_param('application_name'))
-p
               if uri->query_param('application_name');
     } else { # key/value format
         my %args;
@@ -207,12 +207,12 @@ p
              }
              $args{$key} = $value;
         }
-        self->upstream_host($args{host});
-        self->upstream_port($args{port});
-        self->upstream_user($args{user});
-        self->upstream_password($args{password});
-        self->upstream_database($args{dbname});
-        self->standby_name($args{application_name}) if $args{application_name};
+        $self->upstream_host($args{host});
+        $self->upstream_port($args{port});
+        $self->upstream_user($args{user});
+        $self->upstream_password($args{password});
+        $self->upstream_database($args{dbname});
+        $self->standby_name($args{application_name}) if $args{application_name};
     }
     return $self->connection_string;
 }
