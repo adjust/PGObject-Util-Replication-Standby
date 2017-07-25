@@ -53,7 +53,7 @@ our $VERSION = '0.01';
 
     #also ways to measure recovery lag
     $lsn = $standby->recovery_lsn(); # current recovery log location
-    $standby->recovery_lag($lsn);
+    $standby->lag_bytes_from($lsn);
 
     $standby->promote();
 
