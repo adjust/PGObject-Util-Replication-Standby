@@ -9,6 +9,7 @@ sudo pg_createcluster $PGVERSION main
 sudo sh -c "cat t/helpers/config/main.conf >> /etc/postgresql/$PGVERSION/main/postgresql.conf"
 sudo service postgresql start 9.6
 sudo pg_createcluster $PGVERSION replica
+sudo sh -c "cat t/helpers/config/main.conf >> /etc/postgresql/$PGVERSION/replica/postgresql.conf"
 sudo service postgresql stop
 sudo rm -rf ~postgres/$PGVERSION/replica 
 sudo -u postgres cp -r ~postgres/$PGVERSION/main ~postgres/$PGVERSION/replica 
@@ -21,3 +22,5 @@ sleep 3
 sudo ls /var/log/postgresql/
 sudo cat /etc/postgresql/$PGVERSION/main/postgresql.conf
 sudo cat /var/log/postgresql/postgresql-9.6-replica.log
+echo 'MAIN LOG'
+sudo cat /var/log/postgresql/postgresql-9.6-main.log
