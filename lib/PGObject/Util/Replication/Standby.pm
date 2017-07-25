@@ -55,7 +55,8 @@ our $VERSION = '0.01';
     $lsn = $standby->recovery_lsn(); # current recovery log location
     $standby->lag_bytes_from($lsn);
 
-    $standby->promote();
+    # Forthcoming
+    $standby->promote('trigger');
 
     # we can also get the master from the connection string, for example to look up the 
     # wal segments
@@ -186,6 +187,7 @@ sub _set_connection_string {
         $self->upstream_host($uri->host);
         $self->upstream_port($uri->port);
         $self->standby_name($uri->query_param('application_name'))
+p
               if uri->query_param('application_name');
     } else { # key/value format
         my %args;
@@ -227,7 +229,7 @@ This weill normalize the connection string in URL format.
 sub from_recoveryconf {
     my ($self, $path) = @_;
     $self->recoveryconf->fromfile($path);
-    $self->connection_string($self->recoveryconf->get_value('primary_conninfo'));
+    $self->_set_connection_string($self->recoveryconf->get_value('primary_conninfo'));
 }
 
 =head3 recoveryconf_contents
@@ -326,9 +328,6 @@ unspecified order.
 
 =cut
 
-sub promote {
-    my ($self, $method) = @_;
-}
 
 =head1 AUTHOR
 
