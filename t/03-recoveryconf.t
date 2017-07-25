@@ -1,7 +1,7 @@
 use PGObject::Util::Replication::Standby;
 use Test::More;
 
-plan tests => 5;
+plan tests => 6;
 
 my $standby = PGObject::Util::Replication::Standby->new();
 ok($standby, 'Got an SMO for the standby');
@@ -14,3 +14,5 @@ is($standby->connection_string, 'postgresql://localhost/postgres',
 $standby->credentials('foo', 'bar');
 is($standby->connection_string, "postgresql://foo:bar@localhost/postgres",
   'Correct string wtih username, password, host, and dbname');
+my $cstring = $standby->connection_string;
+like($standby->recoveryconf_contents, qr/$cstring/, 'generated file contains connection string');
