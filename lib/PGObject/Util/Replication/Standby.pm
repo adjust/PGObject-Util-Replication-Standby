@@ -118,6 +118,8 @@ sub _build_recoveryconf {
 
 =head2 upstream_password
 
+=head2 upstream_database
+
 =head2 standby_name
 
 =cut
@@ -252,6 +254,8 @@ Returns the contents of the recovery.conf to be used.
 sub recoveryconf_contents {
     my ($self) = @_;
     $self->recoveryconf->set('standby_mode', 1);
+    $self->set_recovery_param('primary_slot_name', $self->standby_name)
+      if $self->standby_name;
     $self->connection_string;
     return $self->recoveryconf->filecontents . "\n";
 }
