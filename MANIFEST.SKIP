@@ -2,6 +2,7 @@ Makefile$
 .git/
 .swp$
 .travis.yml
+t/temp/
 Makefile.old
 MANIFEST.bak
 MANIFEST.SKIP
