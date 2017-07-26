@@ -19,6 +19,7 @@ WriteMakefile(
     },
     PREREQ_PM => {
 	'URI' => 1,
+	'URI::QueryParam' => 1,
 	'Moo' => 0,
 	'PGObject::Util::Replication::SMO' => 0,
     },
