@@ -165,10 +165,10 @@ sub connection_string {
     my ($self, $cstring) = @_;
     return _set_connection_string(@_) if $cstring;
     my $base = "postgresql://";
-    $base .= $self->upstream_host if $self->upstream_host;
     my $uri = URI->new($base);
     my $authority = $self->upstream_user;
     $authority .= ":" . $self->upstream_password if $authority and $self->upstream_password;
+    $authority = join'@', grep {$_} ($authority, $self->upstream_host);
     $uri->authority($authority) if $authority;
     $uri->path($self->upstream_database);
     $uri->query_form({application_name => $self->standby_name}) if $self->standby_name;
@@ -180,15 +180,26 @@ sub connection_string {
 sub _set_connection_string {
     my ($self, $cstring) = @_;
     $cstring //= '';
-    if ($cstring =~ m#^postgresql://#){
+    if ("$cstring" =~ m#^postgresql://#){
         my $uri = URI->new($cstring);
-        $self->upstream_user($uri->user);
-        $self->upstream_password($uri->password);
-        $self->upstream_databaser($uri->path);
-        $self->upstream_host($uri->host);
-        $self->upstream_port($uri->port);
+        my $authority = $uri->authority;
+        my $host;
+        if ($authority =~/\@/){
+            ($authority, $host) = split /\@/, $authority;
+        } else {
+            $host = $authority;
+            undef $authority;
+        }
+        $self->credentials(split /:/, $authority) if $authority;
+        my $dbname = $uri->path;
+        $dbname =~ s#^/##;
+        my $port;
+        ($host, $port) = split /:/, $host if $host and $host =~ /:\d+$/;;
+        $self->upstream_database($dbname);
+        $self->upstream_host($host);
+        $self->upstream_port($port);
         $self->standby_name($uri->query_param('application_name'))
-              if uri->query_param('application_name');
+              if $uri->query_param('application_name');
     } else { # key/value format
         my %args;
         my $old_cstring = 'totally invalid value';
@@ -202,7 +213,7 @@ sub _set_connection_string {
                 $cstring =~ s/'((?:[^']|'')*)'\s*//;
                 $value = $1;
              } else {
-                $cstring =~ s/(\S+)\s+//;
+                $cstring =~ s/(\S+)\s*//;
                 $value = $1;
              }
              $args{$key} = $value if $key;
@@ -242,7 +253,7 @@ sub recoveryconf_contents {
     my ($self) = @_;
     $self->recoveryconf->set('standby_mode', 1);
     $self->connection_string;
-    return $self->recoveryconf->filecontents;
+    return $self->recoveryconf->filecontents . "\n";
 }
 
 =head3 credentials($user, $pass)
