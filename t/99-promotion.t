@@ -1,5 +1,6 @@
 use PGObject::Util::Replication::Standby;
 use Test::More;
+use Data::Dumper;
 
 plan skip_all => 'DB_TESTING not set up' unless $ENV{DB_TESTING};
 
@@ -9,7 +10,7 @@ my $standby = PGObject::Util::Replication::Standby->new();
 ok($standby, 'have a standby');
 $standby->from_recoveryconf('/var/lib/postgresql/9.6/replica/recovery.conf');
 
-ok($standby->recoveryconf->get_value('trigger_file'), 'trigger file defined');
+ok($standby->recoveryconf->get_value('trigger_file'), 'trigger file defined') or diag(Dumper($standby->recoveryconf));
 
 my $trigger_file = $standby->recoveryconf->get_value('trigger_file');
 $standby->recoveryconf->set('trigger_file', '');
