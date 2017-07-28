@@ -348,6 +348,7 @@ sub _promote_trigger {
     local $!;
     my $trigger = $self->recoveryconf->get_value('trigger_file');
     return unless $trigger;
+    warn $trigger;
     open my $fh, '>', $trigger;
     print $fh "\n";
     close $fh;
