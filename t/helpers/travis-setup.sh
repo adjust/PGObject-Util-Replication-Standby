@@ -5,7 +5,8 @@ PGVERSION=9.6
 # base permissions setup
 chmod 755 /var
 chmod 755 /var/lib
-chmod 777 /var/postgresql
+chmod 755 /var/postgresql
+chmod 777 /var/postgresql/$PGVERSION
 chmod 777 /var/run/postgresql/
 
 
