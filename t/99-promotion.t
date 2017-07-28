@@ -15,10 +15,10 @@ my $trigger_file = $standby->recoveryconf->get_value('trigger_file');
 $standby->recoveryconf->set('trigger_file', '');
 ok((not $standby->recoveryconf->get_value('trigger_file')), 'trigger file defined');
 
-ok(-f $standby->recoveryconf_path, 'recovery.conf exists')
+ok(-f $standby->recoveryconf_path, 'recovery.conf exists');
 ok($standby->promote, 'Deleted recovery.conf');
 ok((not -f $standby->recoveryconf_path), 'Recovery.conf no longer exists');
-ok((not $standby->promote, 'false when standby->promote has no trigger file and no recovery.conf exists');
+ok((not $standby->promote), 'false when standby->promote has no trigger file and no recovery.conf exists');
 $standby->recoveryconf->set('trigger_file', $trigger_file);
 ok($standby->promote, 'success with trigger file');
 ok((not $standby->is_recovering), 'Standby is promoted');
