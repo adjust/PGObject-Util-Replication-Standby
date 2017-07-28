@@ -8,7 +8,7 @@ plan skip_all => 'DB_TESTING not set up' unless $ENV{DB_TESTING};
 
 plan tests => 9;
 
-my $standby = PGObject::Util::Replication::Standby->new();
+my $standby = PGObject::Util::Replication::Standby->new(user => 'travis');
 ok($standby, 'have a standby');
 $standby->from_recoveryconf('~postgres/9.6/replica/recovery.conf');
 
