@@ -345,12 +345,13 @@ restarting the cluster.
 
 sub _promote_trigger {
     my ($self) = @_;
+    local $!;
     my $trigger = $self->recoveryconf->get_value('trigger_file');
     return unless $trigger;
     open my $fh, '>', $trigger;
     print $fh "\n";
     close $fh;
-    return;
+    return not defined $!;
 }
 
 sub _promote_recoveryconf {
