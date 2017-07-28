@@ -3,11 +3,11 @@
 PGVERSION=9.6
 
 # base permissions setup
-chmod 755 /var
-chmod 755 /var/lib
-chmod 755 /var/postgresql
-chmod 777 /var/postgresql/$PGVERSION
-chmod 777 /var/run/postgresql/
+sudo chmod 755 /var
+sudo chmod 755 /var/lib
+sudo chmod 755 /var/postgresql
+sudo chmod 777 /var/postgresql/$PGVERSION
+sudo chmod 777 /var/run/postgresql/
 
 
 # Main cluster set to clean slate (main2 on 5433)
