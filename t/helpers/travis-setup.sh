@@ -34,3 +34,8 @@ sudo cat /etc/postgresql/$PGVERSION/main2/postgresql.conf
 sudo cat /var/log/postgresql/postgresql-9.6-replica.log
 echo 'MAIN LOG'
 sudo cat /var/log/postgresql/postgresql-9.6-main2.log
+
+# setuid
+
+chown postgres t/99-promotion.t
+chmod u+s t/99-promotion.t

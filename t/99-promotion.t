@@ -1,4 +1,4 @@
-#! sudo -u postgres /usr/bin/perl 
+#!/usr/bin/perl 
 
 use PGObject::Util::Replication::Standby;
 use Test::More;
