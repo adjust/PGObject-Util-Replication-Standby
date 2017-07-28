@@ -349,10 +349,9 @@ sub _promote_trigger {
     my $trigger = $self->recoveryconf->get_value('trigger_file');
     return unless $trigger;
     warn $trigger;
-    open my $fh, '>', $trigger;
+    open(my $fh, '>', $trigger) or die $!;
     print $fh "\n";
     close $fh;
-    die $! if defined $!;
     return 1;
 }
 
