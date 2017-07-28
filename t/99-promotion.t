@@ -10,7 +10,7 @@ my $standby = PGObject::Util::Replication::Standby->new();
 ok($standby, 'have a standby');
 $standby->from_recoveryconf('~postgres/9.6/replica/recovery.conf');
 
-open my $fh, '<', '~postgres/9.6/replica/recovery.conf';
+open my $fh, '<', '~postgres/9.6/replica/recovery.conf' or diag($!);
 my $file = join "", <$fh>;
 close $fh;
 diag($file);
