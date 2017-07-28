@@ -2,6 +2,11 @@
 
 PGVERSION=9.6
 
+# base permissions setup
+chmod 755 /var
+chmod 755 /var/lib
+chmod 777 /var/postgres
+
 
 # Main cluster set to clean slate (main2 on 5433)
 sudo service postgresql stop
