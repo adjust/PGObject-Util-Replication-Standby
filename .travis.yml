@@ -30,6 +30,6 @@ install:
 before_script:
    - coverage-setup
 script:
-   - prove t/* xt/*
+   - prove -Ilib t/* xt/*
 after-success:
    - coverage-report
