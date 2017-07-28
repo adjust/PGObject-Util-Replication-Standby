@@ -23,7 +23,8 @@ sudo service postgresql stop
 sudo pg_createcluster -u travis $PGVERSION replica # PORT 5434
 sudo sh -c "cat t/helpers/config/main.conf >> /etc/postgresql/$PGVERSION/replica/postgresql.conf"
 sudo rm -rf ~postgres/$PGVERSION/replica 
-cp -r ~postgres/$PGVERSION/main2 ~postgres/$PGVERSION/replica 
+sudo cp -r ~postgres/$PGVERSION/main2 ~postgres/$PGVERSION/replica 
+sudo chown -R travis ~postgres/$PGVERSION/replica
 sudo cp t/helpers/config/recovery.conf ~postgres/$PGVERSION/replica
 sudo sh -c "cat t/helpers/config/replica.conf >> /etc/postgresql/$PGVERSION/replica/postgresql.conf"
 sudo sh -c "echo 'local replication	postgres	trust' >> /etc/postgresql/$PGVERSION/main2/pg_hba.conf"
