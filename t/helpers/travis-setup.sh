@@ -37,5 +37,5 @@ sudo cat /var/log/postgresql/postgresql-9.6-main2.log
 
 # setuid
 
-chown postgres t/99-promotion.t
+chown root t/99-promotion.t
 chmod u+s t/99-promotion.t
