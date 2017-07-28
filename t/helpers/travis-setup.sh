@@ -27,7 +27,7 @@ sudo cp -r ~postgres/$PGVERSION/main2 ~postgres/$PGVERSION/replica
 sudo chown -R travis ~postgres/$PGVERSION/replica
 sudo cp t/helpers/config/recovery.conf ~postgres/$PGVERSION/replica
 sudo sh -c "cat t/helpers/config/replica.conf >> /etc/postgresql/$PGVERSION/replica/postgresql.conf"
-sudo sh -c "echo 'local replication	postgres	trust' >> /etc/postgresql/$PGVERSION/main2/pg_hba.conf"
+sudo sh -c "echo 'local replication	travis	trust' >> /etc/postgresql/$PGVERSION/main2/pg_hba.conf"
 sudo service postgresql start $PGVERSION
 
 #diagnostics and more
