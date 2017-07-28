@@ -5,6 +5,7 @@ use strict;
 use warnings;
 use URI;
 use URI::QueryParam;
+use Carp;
 use Moo;
 extends 'PGObject::Util::Replication::SMO';
 
@@ -122,6 +123,11 @@ sub _build_recoveryconf {
 
 =head2 standby_name
 
+=head2 recoveryconf_path
+
+Last path of the recoveryconf loaded, or the recoveryconf to remove
+for promoting a standby.
+
 =cut
 
 has upstream_host => (is => 'rw', );
@@ -130,6 +136,7 @@ has upstream_user => (is => 'rw', );
 has upstream_password => (is => 'rw', );
 has upstream_database => (is => 'rw',  default => 'postgres');
 has standby_name => (is => 'rw', );
+has recoveryconf_path => (is => 'rw');
 
 =head1 METHODS
 
@@ -242,6 +249,7 @@ This weill normalize the connection string in URL format.
 sub from_recoveryconf {
     my ($self, $path) = @_;
     $self->recoveryconf->fromfile($path);
+    $self->recoveryconf_path($path);
     $self->_set_connection_string($self->recoveryconf->get_value('primary_conninfo'));
 }
 
@@ -312,7 +320,7 @@ Provides a generic SMO for the immediate upstream server.
 Traverses upstream until it finds a server which is not recovering and returns a Master SMO for
 that server.
 
-=head2 Promotion (Forthcoming)
+=head2 Promotion
 
 Promotion can be done in this case if we can touch a trigger file specified in the recovery.conf
 or if we can remove the recovery.conf and restart PostgreSQL.
@@ -324,25 +332,44 @@ Otherwise tries to rename the recovery.conf and restart.  Methods tried are:
 
 =over
 
-=item ctlcluster: pg_ctlcluster 
+=item trigger:  write to trigger file
 
-available on Debian and Ubuntu systems
-
-=item sysv: service postgresql restart
-
-where sysv init scripts are used.
-
-=item systemd: systemctl restart postgresql
-
-where systemd is used.
+=item recoveryconf: delete recovery.conf
 
 =back
 
-If no method is provided we search through the methods in
-unspecified order.
+We can only restart if PGObject::Util::Replication::SMO supports
+restarting the cluster.
 
 =cut
 
+sub _promote_trigger {
+    my ($self) = @_;
+    local $!;
+    my $trigger = $self->recoveryconf->get_value('trigger_file');
+    return unless $trigger;
+    warn $trigger;
+    open(my $fh, '>', $trigger) or die $!;
+    print $fh "\n";
+    close $fh;
+    return 1;
+}
+
+sub _promote_recoveryconf {
+    my ($self) = @_;
+    croak 'No recoveryconf_path set up' unless $self->recoveryconf_path;
+    return unlink $self->recoveryconf_path;
+}
+
+
+sub promote {
+    my ($self) = @_;
+    return $self->_promote_trigger 
+         if $self->recoveryconf->get_value('trigger_file');
+    my $retval = $self->_promote_recoveryconf();
+    $self->restart if $self->can('restart'); # if supported by SMO
+    return $retval;
+}
 
 =head1 AUTHOR
 
