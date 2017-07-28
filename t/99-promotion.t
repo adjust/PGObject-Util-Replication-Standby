@@ -1,5 +1,5 @@
 #!/usr/bin/perl 
-
+diag(`whoami`);
 use PGObject::Util::Replication::Standby;
 use Test::More;
 use Data::Dumper;
