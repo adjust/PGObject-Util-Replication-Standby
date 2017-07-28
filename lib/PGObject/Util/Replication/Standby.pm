@@ -56,8 +56,8 @@ our $VERSION = '0.02';
     $lsn = $standby->recovery_lsn(); # current recovery log location
     $standby->lag_bytes_from($lsn);
 
-    # Forthcoming
-    $standby->promote('trigger');
+    # Promote to master
+    $standby->promote();
 
     # we can also get the master from the connection string, for example to look up the 
     # wal segments
