@@ -5,8 +5,8 @@ PGVERSION=9.6
 # base permissions setup
 sudo chmod 755 /var
 sudo chmod 755 /var/lib
-sudo chmod 755 /var/postgresql
-sudo chmod 777 /var/postgresql/$PGVERSION
+sudo chmod 755 /var/lib/postgresql
+sudo chmod 777 /var/lib/postgresql/$PGVERSION
 sudo chmod 777 /var/run/postgresql/
 
 
@@ -21,9 +21,9 @@ sudo pg_ctlcluster $PGVERSION main2 start
 sudo -u postgres createuser -s -p 5433 travis &>/dev/null
 
 # create replica
+sudo service postgresql stop
 sudo pg_createcluster -u travis $PGVERSION replica # PORT 5434
 sudo sh -c "cat t/helpers/config/main.conf >> /etc/postgresql/$PGVERSION/replica/postgresql.conf"
-sudo service postgresql stop
 sudo rm -rf ~postgres/$PGVERSION/replica 
 cp -r ~postgres/$PGVERSION/main2 ~postgres/$PGVERSION/replica 
 sudo cp t/helpers/config/recovery.conf ~postgres/$PGVERSION/replica
