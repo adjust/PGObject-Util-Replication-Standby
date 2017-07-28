@@ -16,18 +16,19 @@ env:
 before_install:
 #   - cpanm --notest https://github.com/adjust/PGObject-Util-Replication-Slot/archive/master.tar.gz
 #   - cpanm --notest https://github.com/adjust/PGObject-Util-Replication-SMO/archive/master.tar.gz
-   - t/helpers/travis-setup.sh
    - git clone git://github.com/travis-perl/helpers ~/travis-perl-helpers
    - source ~/travis-perl-helpers/init
    - build-perl
    - perl -V
    - build-dist
+   - echo $BUILD_DIR
    - cd $BUILD_DIR             # $BUILD_DIR is set by the build-dist command
 install:
-  - cpan-install --deps       # installs prereqs, including recommends
-  - cpan-install --coverage   # installs converage prereqs, if enabled
+   - t/helpers/travis-setup.sh
+   - cpan-install --deps       # installs prereqs, including recommends
+   - cpan-install --coverage   # installs converage prereqs, if enabled
 before_script:
-  - coverage-setup
+   - coverage-setup
 script:
    - prove t/* xt/*
 after-success:
