@@ -351,7 +351,8 @@ sub _promote_trigger {
     open my $fh, '>', $trigger;
     print $fh "\n";
     close $fh;
-    return not defined $!;
+    die $! if defined $!;
+    return 1;
 }
 
 sub _promote_recoveryconf {
