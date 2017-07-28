@@ -10,6 +10,11 @@ my $standby = PGObject::Util::Replication::Standby->new();
 ok($standby, 'have a standby');
 $standby->from_recoveryconf('/var/lib/postgresql/9.6/replica/recovery.conf');
 
+open my $fh, '<', '/var/lib/postgresql/9.6/replica/recovery.conf';
+my $file = join "", <$fh>;
+close $fh;
+diag($file);
+
 ok($standby->recoveryconf->get_value('trigger_file'), 'trigger file defined') or diag(Dumper($standby->recoveryconf));
 
 my $trigger_file = $standby->recoveryconf->get_value('trigger_file');
