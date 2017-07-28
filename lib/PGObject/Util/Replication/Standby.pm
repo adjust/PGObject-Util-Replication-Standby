@@ -364,7 +364,7 @@ sub promote {
     my ($self) = @_;
     return $self->_promote_trigger 
          if $self->recoveryconf->get_value('trigger_file');
-    $self->_promote_recovery_conf();
+    $self->_promote_recoveryconf();
     $self->restart if $self->can('restart'); # if supported by SMO
 }
 
