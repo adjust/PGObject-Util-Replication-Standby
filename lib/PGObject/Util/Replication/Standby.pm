@@ -16,11 +16,11 @@ PGObject::Util::Replication::Standby - Manage PG replication standbys
 
 =head1 VERSION
 
-Version 0.01
+Version 0.02
 
 =cut
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 
 =head1 SYNOPSIS
@@ -56,8 +56,8 @@ our $VERSION = '0.01';
     $lsn = $standby->recovery_lsn(); # current recovery log location
     $standby->lag_bytes_from($lsn);
 
-    # Forthcoming
-    $standby->promote('trigger');
+    # Promote to master
+    $standby->promote();
 
     # we can also get the master from the connection string, for example to look up the 
     # wal segments
