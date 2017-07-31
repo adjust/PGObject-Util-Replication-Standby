@@ -13,10 +13,10 @@ sudo chmod 777 /var/run/postgresql/
 # Main cluster set to clean slate (main2 on 5433)
 sudo service postgresql stop
 sudo pg_lsclusters 
-sudo pg_createcluster $PGVERSION main2 # PORT 5433
+sudo pg_createcluster -u travis $PGVERSION main2 # PORT 5433
 sudo sh -c "cat t/helpers/config/main.conf >> /etc/postgresql/$PGVERSION/main2/postgresql.conf"
 sudo pg_ctlcluster $PGVERSION main2 start
-sudo -u postgres createuser -s -p 5433 travis &>/dev/null
+#sudo -u postgres createuser -s -p 5433 travis &>/dev/null
 
 # create replica
 sudo service postgresql stop
